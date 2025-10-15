@@ -28,11 +28,15 @@ class ProductListItem extends StatelessWidget {
       decimalDigits: 0,
     );
 
-    return Container(
+    return AnimatedContainer(
+      duration: const Duration(milliseconds: 200),
       margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: isSelected ? Colors.blue[50] : Colors.white,
         borderRadius: BorderRadius.circular(8),
+        border: isSelected 
+            ? Border.all(color: Colors.blue[300]!, width: 2)
+            : null,
         boxShadow: [
           BoxShadow(
             color: Colors.grey.withOpacity(0.1),
@@ -43,7 +47,7 @@ class ProductListItem extends StatelessWidget {
         ],
       ),
       child: InkWell(
-        onTap: isSelectionMode ? () => onSelectionChanged(!isSelected) : onTap,
+        onTap: onTap,
         onLongPress: onLongPress,
         borderRadius: BorderRadius.circular(8),
         child: Padding(
@@ -51,14 +55,7 @@ class ProductListItem extends StatelessWidget {
           child: Row(
             children: [
               // Selection checkbox (when in selection mode)
-              if (isSelectionMode)
-                Padding(
-                  padding: const EdgeInsets.only(right: 12),
-                  child: Checkbox(
-                    value: isSelected,
-                    onChanged: (value) => onSelectionChanged(value ?? false),
-                  ),
-                ),
+
 
               // Product info
               Expanded(
@@ -158,15 +155,20 @@ class ProductListItem extends StatelessWidget {
               ),
 
               // Arrow icon (when not in selection mode)
-              if (!isSelectionMode)
-                const Padding(
-                  padding: EdgeInsets.only(left: 8),
-                  child: Icon(
-                    Icons.arrow_forward_ios,
-                    size: 16,
-                    color: Colors.grey,
-                  ),
-                ),
+              AnimatedContainer(
+                duration: const Duration(milliseconds: 200),
+                width: isSelectionMode ? 0 : 24,
+                child: !isSelectionMode
+                    ? const Padding(
+                        padding: EdgeInsets.only(left: 8),
+                        child: Icon(
+                          Icons.arrow_forward_ios,
+                          size: 16,
+                          color: Colors.grey,
+                        ),
+                      )
+                    : null,
+              ),
             ],
           ),
         ),

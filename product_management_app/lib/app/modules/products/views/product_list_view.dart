@@ -85,14 +85,14 @@ class ProductListView extends StatelessWidget {
                       )
                     : const SizedBox.shrink()),
                 Expanded(
-                  child: Text(
-                    'Daftar Produk',
+                  child: Obx(() => Text(
+                    controller.isSelectionMode ? controller.selectedProducts.length == controller.products.length ? 'Deselect All' : 'Select All' : 'Daftar Produk',
                     style: TextStyle(
                       fontSize: 14,
                       fontWeight: FontWeight.w500,
-                      color: Colors.grey[600],
+                      color: controller.isSelectionMode ? Colors.blue[700] : Colors.grey[600],
                     ),
-                  ),
+                  )),
                 ),
                 Obx(() => Text(
                       '${controller.totalItems} items',
@@ -207,18 +207,25 @@ class ProductListView extends StatelessWidget {
                     }
 
                     final product = controller.products[index];
-                    return ProductListItem(
+                    return Obx(() => ProductListItem(
                       product: product,
                       isSelected: controller.isProductSelected(product),
                       isSelectionMode: controller.isSelectionMode,
-                      onTap: () => _showProductDetail(context, product),
-                      onLongPress: () => controller.toggleProductSelection(product),
-                      onSelectionChanged: (selected) {
-                        if (selected) {
+                      onTap: () {
+                        if (controller.isSelectionMode) {
+                          // In selection mode, tap toggles selection
                           controller.toggleProductSelection(product);
+                        } else {
+                          // In normal mode, tap shows detail
+                          _showProductDetail(context, product);
                         }
                       },
-                    );
+                      onLongPress: () => controller.toggleProductSelection(product),
+                      onSelectionChanged: (selected) {
+                        // Always toggle selection regardless of current state
+                        controller.toggleProductSelection(product);
+                      },
+                    ));
                   },
                 ),
               );
@@ -233,11 +240,20 @@ class ProductListView extends StatelessWidget {
                   child: Row(
                     children: [
                       Checkbox(
-                        value: false,
-                        onChanged: (value) {},
+                        value: controller.selectedCount == controller.products.length,
+                        tristate: true,
+                        onChanged: (value) {
+                          if (controller.selectedCount == controller.products.length) {
+                            controller.clearSelection();
+                          } else {
+                            controller.selectAllProducts();
+                          }
+                        },
                       ),
                       Text(
-                        '${controller.selectedCount} selected',
+                        controller.selectedCount == controller.products.length
+                            ? 'All selected'
+                            : '${controller.selectedCount} selected',
                         style: const TextStyle(
                           fontSize: 14,
                           fontWeight: FontWeight.w500,
@@ -249,7 +265,9 @@ class ProductListView extends StatelessWidget {
                           backgroundColor: Colors.red,
                           foregroundColor: Colors.white,
                         ),
-                        onPressed: () => _showDeleteConfirmation(context, controller),
+                        onPressed: controller.selectedCount > 0 
+                            ? () => _showDeleteConfirmation(context, controller)
+                            : null,
                         child: const Text('Delete'),
                       ),
                     ],
